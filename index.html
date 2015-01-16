@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
+  <!-- Bootstrap theme -->  
+  <link href="css/bootstrap-theme.css" rel="stylesheet">
 
 	<!-- Goodle jquery CDN-->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
-<!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script> 
 
-<link rel="stylesheet" type="text/css" href="theme.css">
 	<title>Canvas Drawer</title>
 </head>
 <body>
-
 
 <div class="navbar navbar-default">
   <div class="navbar-header">
@@ -26,7 +27,7 @@
   <div class="navbar-collapse collapse navbar-responsive-collapse">
     <ul class="nav navbar-nav">
       <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tool Select<b class="caret"></b></a>
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="glyphicon glyphicon-pencil"></i>Tool Select<b class="caret"></b></a>
         <ul class="dropdown-menu">
           <li><a href="#" class="toolSelect" data-toolType="pen">Pen</a></li>
           <li><a href="#" class="toolSelect" data-toolType="line">Line</a></li>
@@ -36,7 +37,7 @@
         </ul>
       </li>
       <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Color Select<b class="caret"></b></a>
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="glyphicon glyphicon-tint"></i> Color Select<b class="caret"></b></a>
         <ul class="dropdown-menu">
           <li><a href="#" class="colorSelect" data-toolColor="#282828">Black</a></li>
           <li><a href="#" class="colorSelect" data-toolColor="#B00000">Red</a></li>
@@ -44,8 +45,10 @@
           <li><a href="#" class="colorSelect" data-toolColor="#33CC00">Green</a></li>
         </ul>
       </li>
-      <li><a href="#">Save Canvas</a></li>
-      <li><a class="newCanvas" href="#">New Canvas</a></li>
+      <li><a class="saveCanvas"href="#"><i class="glyphicon glyphicon-floppy-disk"></i> Save Canvas</a></li>
+      <li><a class="newCanvas" href="#"><i class="glyphicon glyphicon-refresh"></i> New Canvas</a></li>
+      <li><a class="undo" href="#"><i class="glyphicon glyphicon-arrow-left"></i> Undo</a></li>
+      <li><a class="redo" href="#">Redo <i class="glyphicon glyphicon-arrow-right"></i></a></li>
     </ul>
   </div>
 </div>
