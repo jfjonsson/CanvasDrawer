@@ -8,9 +8,12 @@ $(function() {
   	cntxt.fillRect(0, 0, cntxt.canvas.width, cntxt.canvas.height);
 
   	function clearCanvas() {
-		cntxt.clearRect ( 0 , 0 , cntxt.canvas.width, cntxt.canvas.height );
-		cntxt.fillRect(0, 0, cntxt.canvas.width, cntxt.canvas.height);
-	} 
+		ctx.clearRect ( 0 , 0 , ctx.canvas.width, ctx.canvas.height );
+		ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+	}
+	$(".navbar-brand").click(function() {
+		location.reload();
+	});
 
 	$(".newCanvas").click( function( event ) {
 		console.log("clearing");
