@@ -156,7 +156,6 @@ $(function() {
 		cntxt.strokeStyle = drawing.color;
 		cntxt.beginPath();
 		cntxt.rect(drawing_startx, drawing_starty, x - drawing_startx, y - drawing.starty);
-		cntxt.fillRect(drawing_startx, drawing_starty, x - drawing_startx, y - drawing.starty);
 		cntxt.stroke();
 	}
 
@@ -189,14 +188,13 @@ $(function() {
 	});
 
 	var Rect = Shape.extend({
-		constr: function(x, y, color) {
+		constructor: function(x, y, color) {
 			this.base( x, y, drawing.color, "rect");
 		},
 		draw: function(cntxt) {
 			cntxt.strokeStyle = this.color;
 			cntxt.beginPath();
 			cntxt.rect(this.startx, this.starty, this.endx - this.startx, this.endy - this.starty);
-			cntxt.fillRect(this.startx, this.starty, this.endx - this.startx, this.endy - this.starty);
 			cntxt.stroke();
 		}
 	});
