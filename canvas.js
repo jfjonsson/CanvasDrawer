@@ -97,6 +97,9 @@ $(function() {
 			if(drawing.tool === "circle") {
 				circleHelper(x, y);
 			}
+			if(drawing.tool === "rect") {
+				rectHelper(x, y);
+			}
 		}
 	});
 
@@ -113,6 +116,10 @@ $(function() {
 		if(drawing.tool === "circle") {
 			var newCircle = new Circle(x, y);
 			drawing.canvasStack.push(newCircle);
+		}
+		if(drawing.tool === "rect") {
+			var newRect = new Rect(x, y);
+			drawing.canvasStack.push(newRect);
 		}
 	});
 
@@ -131,7 +138,8 @@ $(function() {
 	function circleHelper(x, y){
 		cntxt.strokeStyle = drawing.color;
 		cntxt.beginPath();
-		cntxt.arc(x, y, 50, 0, 2 * Math.PI, true);
+		cntxt.moveTo(drawing_startx, drawing_starty);
+		cntxt.arc(x, y, 50, 0, 2 * Math.PI, false);
 		cntxt.stroke();
 	}
 
@@ -141,6 +149,14 @@ $(function() {
 		cntxt.beginPath();
 		cntxt.moveTo(drawing_startx, drawing_starty);
 		cntxt.lineTo(x, y);
+		cntxt.stroke();
+	}
+
+	function rectHelper(x, y){
+		cntxt.strokeStyle = drawing.color;
+		cntxt.beginPath();
+		cntxt.rect(drawing_startx, drawing_starty, x - drawing_startx, y - drawing.starty);
+		cntxt.fillRect(drawing_startx, drawing_starty, x - drawing_startx, y - drawing.starty);
 		cntxt.stroke();
 	}
 
@@ -166,6 +182,7 @@ $(function() {
 		draw: function(cntxt) {
 			cntxt.strokeStyle = this.color;
 			cntxt.beginPath();
+			cntxt.moveTo(this.startx, this.starty);
 			cntxt.arc(this.endx, this.endy, 50, 0, 2 * Math.PI, false);
 			cntxt.stroke();
 		}
@@ -173,10 +190,14 @@ $(function() {
 
 	var Rect = Shape.extend({
 		constr: function(x, y, color) {
-			this.base( x, y, color, "rect");
+			this.base( x, y, drawing.color, "rect");
 		},
 		draw: function(cntxt) {
-
+			cntxt.strokeStyle = this.color;
+			cntxt.beginPath();
+			cntxt.rect(this.startx, this.starty, this.endx - this.startx, this.endy - this.starty);
+			cntxt.fillRect(this.startx, this.starty, this.endx - this.startx, this.endy - this.starty);
+			cntxt.stroke();
 		}
 	});
 
