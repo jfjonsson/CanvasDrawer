@@ -6,6 +6,7 @@ $(function() {
 
   	cntxt.fillStyle="#EFEFEF";
   	cntxt.fillRect(0, 0, cntxt.canvas.width, cntxt.canvas.height);
+  	cntxt.lineWidth = 4;
 
   	function clearCanvas() {
 		cntxt.clearRect ( 0 , 0 , cntxt.canvas.width, cntxt.canvas.height );
@@ -47,7 +48,7 @@ $(function() {
 		canvasStack: [],
 		canvasRedoStack: [],
 		color: "#282828",
-		tool: "pen",
+		tool: "line",
 		undo: function() {
 			if(this.canvasStack.length > 0) {
 				this.canvasRedoStack.push(this.canvasStack.pop());
@@ -72,12 +73,12 @@ $(function() {
 	};
 
 	var isDrawing = false;
+	var isDragging = false;
 
 	var drawing_startx = 0;
 	var drawing_starty = 0;
 
 	$("#paintView").mousedown(function (ev) {
-		cntxt.strokeStyle = drawing.color;
 		drawing_startx = ev.pageX - this.offsetLeft;
 		drawing_starty = ev.pageY - this.offsetTop;
 		isDrawing = true;
@@ -93,6 +94,12 @@ $(function() {
 			if(drawing.tool === "line") {
 				lineHelper(x, y);
 			}
+			if(drawing.tool === "circle") {
+				circleHelper(x, y);
+			}
+			if(drawing.tool === "rect") {
+				rectHelper(x, y);
+			}
 		}
 	});
 
@@ -105,6 +112,14 @@ $(function() {
 		if(drawing.tool === "line") {
 			var newLine = new Line(x, y);
 			drawing.canvasStack.push(newLine);
+		}
+		if(drawing.tool === "circle") {
+			var newCircle = new Circle(x, y);
+			drawing.canvasStack.push(newCircle);
+		}
+		if(drawing.tool === "rect") {
+			var newRect = new Rect(x, y);
+			drawing.canvasStack.push(newRect);
 		}
 	});
 
@@ -120,11 +135,28 @@ $(function() {
 		}
 	});
 
+	function circleHelper(x, y){
+		cntxt.strokeStyle = drawing.color;
+		cntxt.beginPath();
+		cntxt.moveTo(drawing_startx, drawing_starty);
+		cntxt.arc(x, y, 50, 0, 2 * Math.PI, false);
+		cntxt.stroke();
+	}
+
+
 	function lineHelper(x, y) {
-			cntxt.beginPath();
-			cntxt.moveTo(drawing_startx, drawing_starty);
-			cntxt.lineTo(x, y);
-			cntxt.stroke();
+		cntxt.strokeStyle = drawing.color;
+		cntxt.beginPath();
+		cntxt.moveTo(drawing_startx, drawing_starty);
+		cntxt.lineTo(x, y);
+		cntxt.stroke();
+	}
+
+	function rectHelper(x, y){
+		cntxt.strokeStyle = drawing.color;
+		cntxt.beginPath();
+		cntxt.rect(drawing_startx, drawing_starty, x - drawing_startx, y - drawing.starty);
+		cntxt.stroke();
 	}
 
 	var Line = Shape.extend({
@@ -141,13 +173,29 @@ $(function() {
 
 		}
 	});
-
-	var Rect = Shape.extend({
-		constr: function(x, y, color) {
-			this.base( x, y, color, "rect");
+	var Circle = Shape.extend({
+		constructor: function(x, y) {
+			console.log("Creating Circle, x: " + x + ", y: " + y + ", color: " + drawing.color);
+			this.base( x, y, drawing.color, "circle");
 		},
 		draw: function(cntxt) {
+			cntxt.strokeStyle = this.color;
+			cntxt.beginPath();
+			cntxt.moveTo(this.startx, this.starty);
+			cntxt.arc(this.endx, this.endy, 50, 0, 2 * Math.PI, false);
+			cntxt.stroke();
+		}
+	});
 
+	var Rect = Shape.extend({
+		constructor: function(x, y, color) {
+			this.base( x, y, drawing.color, "rect");
+		},
+		draw: function(cntxt) {
+			cntxt.strokeStyle = this.color;
+			cntxt.beginPath();
+			cntxt.rect(this.startx, this.starty, this.endx - this.startx, this.endy - this.starty);
+			cntxt.stroke();
 		}
 	});
 
