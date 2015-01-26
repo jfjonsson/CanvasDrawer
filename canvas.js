@@ -8,8 +8,8 @@ $(function() {
   	cntxt.fillRect(0, 0, cntxt.canvas.width, cntxt.canvas.height);
 
   	function clearCanvas() {
-		ctx.clearRect ( 0 , 0 , ctx.canvas.width, ctx.canvas.height );
-		ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+		cntxt.clearRect ( 0 , 0 , cntxt.canvas.width, cntxt.canvas.height );
+		cntxt.fillRect(0, 0, cntxt.canvas.width, cntxt.canvas.height);
 	}
 	$(".navbar-brand").click(function() {
 		location.reload();
