@@ -47,8 +47,9 @@ $(function() {
 	var drawing = {
 		canvasStack: [],
 		canvasRedoStack: [],
+		selectedId: null,
 		color: "#282828",
-		tool: "line",
+		tool: "circle",
 		undo: function() {
 			if(this.canvasStack.length > 0) {
 				this.canvasRedoStack.push(this.canvasStack.pop());
@@ -68,6 +69,17 @@ $(function() {
 				//console.log(this.canvasStack[i].color);
 				this.canvasStack[i].draw(cntxt);
 			};
+		},
+		selectElement: function(x, y) {
+			this.drawElements();
+			for (var i = this.canvasStack.length - 1; i >= 0; i--) {
+				if(this.canvasStack[i].atPoint(x, y)) {
+					this.canvasStack[i].selected = true;
+					this.canvasStack[i].drawSelect();
+					this.selectedId = i;
+					return;
+				}
+			};
 		}
 
 	};
@@ -82,6 +94,11 @@ $(function() {
 		drawing_startx = ev.pageX - this.offsetLeft;
 		drawing_starty = ev.pageY - this.offsetTop;
 		isDrawing = true;
+		if(drawing.tool === "select") {
+			if(drawing.selectedId === null) {
+				drawing.selectElement(drawing_startx, drawing_starty);
+			} 
+		}
 	});
 
 	$("#paintView").mousemove(function (ev) {
@@ -97,6 +114,10 @@ $(function() {
 				circleHelper(x, y);
 			} else if(drawing.tool === "rect") {
 				rectHelper(x, y);
+			} else if(drawing.tool === "select" && drawing.selectedId != null) {
+				selectHelper(x, y);
+				drawing_startx = ev.pageX - this.offsetLeft;
+				drawing_starty = ev.pageY - this.offsetTop;
 			}
 		}
 	});
@@ -116,8 +137,20 @@ $(function() {
 		} else if(drawing.tool === "rect") {
 			var newRect = new Rect(x, y);
 			drawing.canvasStack.push(newRect);
+		} else if(drawing.tool === "select") {
+			drawing.selectedId = null;
 		}
 	});
+
+	function selectHelper(x, y) {
+		var xdev = x - drawing_startx;
+		var ydev = y - drawing_starty;
+		console.log(drawing.selectedId);
+		drawing.canvasStack[drawing.selectedId].startx += xdev;
+		drawing.canvasStack[drawing.selectedId].starty += ydev;
+		drawing.canvasStack[drawing.selectedId].endx += xdev;
+		drawing.canvasStack[drawing.selectedId].endy += ydev;
+	}
 
 	var Shape = Base.extend({
 		constructor: function(x, y, color, type) {
@@ -128,19 +161,54 @@ $(function() {
 			this.color = color;
 			this.type = type;
 			this.selected = false;
+			this.lineCords = [];
 		},
 		atPoint: function(x, y) {
-			//return ((x <= ) || ()) && (() || ())
+			if(this.type === "circle") {
+				var dx = (this.endx - this.startx),
+				dy = (this.endy - this.starty),
+				radius = Math.sqrt(dx * dx + dy * dy),
+				xmn = this.startx - radius - 10,
+				xmx = this.startx + radius + 10,
+				ymn = this.starty - radius - 10,
+				ymx = this.starty + radius + 10;
+			} else {
+				var xmn = Math.min(this.startx, this.endx) - 10,
+				xmx = Math.max(this.startx, this.endx) + 10,
+				ymn = Math.min(this.starty, this.endy) - 10,
+				ymx = Math.max(this.starty, this.endy) + 10;
+			}
+			return (x >= xmn) && (x <= xmx) 
+			&& (y >= ymn) && (y <= ymx);
+		},
+		drawSelect: function() {
+			cntxt.strokeStyle = "#FF0000";
+			cntxt.beginPath();
+			if(this.type === "circle") {
+				var dx = (this.endx - this.startx),
+				dy = (this.endy - this.starty),
+				radius = Math.sqrt(dx * dx + dy * dy);
+				cntxt.rect(this.startx - radius - 10, this.starty - radius - 10, radius * 2 + 20, radius * 2 + 20);
+			} else {
+				cntxt.rect(this.startx - 10, this.starty - 10, 
+				this.endx - this.startx + 20, this.endy - this.starty + 20);
+			}
+			cntxt.stroke();
 		}
 	});
 
-	function circleHelper(x, y){
-		cntxt.strokeStyle = drawing.color;
-		cntxt.beginPath();
-		cntxt.arc(x, y, 50, 0, 2 * Math.PI, false);
-		cntxt.stroke();
+	function penHelper(x, y) {
+
 	}
 
+	var Pen = Shape.extend({
+		constructor: function() {
+
+		},
+		draw: function(cntxt) {
+
+		}
+	});
 
 	function lineHelper(x, y) {
 		cntxt.strokeStyle = drawing.color;
@@ -150,20 +218,13 @@ $(function() {
 		cntxt.stroke();
 	}
 
-	function rectHelper(x, y){
-		cntxt.strokeStyle = drawing.color;
-		cntxt.rect(drawing_startx, drawing_starty, 
-			x - drawing_startx, y - drawing_starty);
-		cntxt.stroke();
-	}
-
 	var Line = Shape.extend({
 		constructor: function(x, y) {
 			console.log("Creating Line, x: " + x + ", y: " + y + ", color: " + drawing.color);
 			this.base( x, y, drawing.color, "line");
 		},
 		draw: function(cntxt) {
-			cntxt.strokeStyle = drawing.color;
+			cntxt.strokeStyle = this.color;
 			cntxt.beginPath();
 			cntxt.moveTo(this.startx, this.starty);
 			cntxt.lineTo(this.endx, this.endy);
@@ -171,6 +232,17 @@ $(function() {
 
 		}
 	});
+
+	function circleHelper(x, y){
+		cntxt.strokeStyle = drawing.color;
+		cntxt.beginPath();
+		var dx = Math.abs(drawing_startx - x);
+		var dy = Math.abs(drawing_starty - y);
+		var radius = Math.sqrt(dx * dx + dy * dy);
+		cntxt.arc(drawing_startx, drawing_starty,
+			radius, 0, 2 * Math.PI, false);
+		cntxt.stroke();
+	}
 
 	var Circle = Shape.extend({
 		constructor: function(x, y) {
@@ -180,10 +252,21 @@ $(function() {
 		draw: function(cntxt) {
 			cntxt.strokeStyle = this.color;
 			cntxt.beginPath();
-			cntxt.arc(this.endx, this.endy, 50, 0, 2 * Math.PI, false);
+			var dx = Math.abs(this.startx - this.endx);
+			var dy = Math.abs(this.starty - this.endy);
+			var radius = Math.sqrt(dx * dx + dy * dy);
+			cntxt.arc(this.startx, this.starty, radius, 0, 2 * Math.PI, false);
 			cntxt.stroke();
 		}
 	});
+
+	function rectHelper(x, y){
+		cntxt.strokeStyle = drawing.color;
+		cntxt.beginPath();
+		cntxt.rect(drawing_startx, drawing_starty, 
+			x - drawing_startx, y - drawing_starty);
+		cntxt.stroke();
+	}
 
 	var Rect = Shape.extend({
 		constructor: function(x, y, color) {
@@ -191,6 +274,7 @@ $(function() {
 		},
 		draw: function(cntxt) {
 			cntxt.strokeStyle = this.color;
+			cntxt.beginPath();
 			cntxt.rect(this.startx, this.starty, this.endx - this.startx, this.endy - this.starty);
 			cntxt.stroke();
 		}
