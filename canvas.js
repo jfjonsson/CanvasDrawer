@@ -64,8 +64,8 @@ $(function() {
 		drawElements: function() {
 			clearCanvas();
 			for (var i = 0; i < this.canvasStack.length; ++i) {
-				console.log("Drawing elem " + i);
-				console.log(this.canvasStack[i].color);
+				//console.log("Drawing elem " + i);
+				//console.log(this.canvasStack[i].color);
 				this.canvasStack[i].draw(cntxt);
 			};
 		}
@@ -93,11 +93,9 @@ $(function() {
 
 			if(drawing.tool === "line") {
 				lineHelper(x, y);
-			}
-			if(drawing.tool === "circle") {
+			} else if(drawing.tool === "circle") {
 				circleHelper(x, y);
-			}
-			if(drawing.tool === "rect") {
+			} else if(drawing.tool === "rect") {
 				rectHelper(x, y);
 			}
 		}
@@ -112,12 +110,10 @@ $(function() {
 		if(drawing.tool === "line") {
 			var newLine = new Line(x, y);
 			drawing.canvasStack.push(newLine);
-		}
-		if(drawing.tool === "circle") {
+		} else if(drawing.tool === "circle") {
 			var newCircle = new Circle(x, y);
 			drawing.canvasStack.push(newCircle);
-		}
-		if(drawing.tool === "rect") {
+		} else if(drawing.tool === "rect") {
 			var newRect = new Rect(x, y);
 			drawing.canvasStack.push(newRect);
 		}
@@ -132,13 +128,15 @@ $(function() {
 			this.color = color;
 			this.type = type;
 			this.selected = false;
+		},
+		atPoint: function(x, y) {
+			//return ((x <= ) || ()) && (() || ())
 		}
 	});
 
 	function circleHelper(x, y){
 		cntxt.strokeStyle = drawing.color;
 		cntxt.beginPath();
-		cntxt.moveTo(drawing_startx, drawing_starty);
 		cntxt.arc(x, y, 50, 0, 2 * Math.PI, false);
 		cntxt.stroke();
 	}
@@ -154,8 +152,8 @@ $(function() {
 
 	function rectHelper(x, y){
 		cntxt.strokeStyle = drawing.color;
-		cntxt.beginPath();
-		cntxt.rect(drawing_startx, drawing_starty, x - drawing_startx, y - drawing.starty);
+		cntxt.rect(drawing_startx, drawing_starty, 
+			x - drawing_startx, y - drawing_starty);
 		cntxt.stroke();
 	}
 
@@ -165,7 +163,7 @@ $(function() {
 			this.base( x, y, drawing.color, "line");
 		},
 		draw: function(cntxt) {
-			cntxt.strokeStyle = this.color;
+			cntxt.strokeStyle = drawing.color;
 			cntxt.beginPath();
 			cntxt.moveTo(this.startx, this.starty);
 			cntxt.lineTo(this.endx, this.endy);
@@ -173,6 +171,7 @@ $(function() {
 
 		}
 	});
+
 	var Circle = Shape.extend({
 		constructor: function(x, y) {
 			console.log("Creating Circle, x: " + x + ", y: " + y + ", color: " + drawing.color);
@@ -181,7 +180,6 @@ $(function() {
 		draw: function(cntxt) {
 			cntxt.strokeStyle = this.color;
 			cntxt.beginPath();
-			cntxt.moveTo(this.startx, this.starty);
 			cntxt.arc(this.endx, this.endy, 50, 0, 2 * Math.PI, false);
 			cntxt.stroke();
 		}
@@ -193,7 +191,6 @@ $(function() {
 		},
 		draw: function(cntxt) {
 			cntxt.strokeStyle = this.color;
-			cntxt.beginPath();
 			cntxt.rect(this.startx, this.starty, this.endx - this.startx, this.endy - this.starty);
 			cntxt.stroke();
 		}
