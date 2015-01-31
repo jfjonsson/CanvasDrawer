@@ -19,6 +19,7 @@ $(function() {
 	$(".newCanvas").click( function( event ) {
 		console.log("clearing");
 		clearCanvas();
+		drawing.canvasStack.length = 0;
 	});
 
 	window.addEventListener("keydown", function(ev) {
