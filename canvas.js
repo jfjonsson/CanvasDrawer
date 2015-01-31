@@ -259,17 +259,17 @@ $(function() {
 		addCords: function(x, y) {
 			this.cords.push(new Point(x, y));
 			drawing.drawElements();
-			if(x > this.xmx) {
-				this.xmx = x;
+			if(x + 10 > this.xmx) {
+				this.xmx = x + 10;
 			}
-			if(x < this.xmn) {
-				this.xmn = x;
+			if(x - 10 < this.xmn) {
+				this.xmn = x - 10;
 			}
-			if(y > this.ymx) {
-				this.ymx = y;
+			if(y + 10 > this.ymx) {
+				this.ymx = y + 10;
 			}
-			if(y < this.ymn) {
-				this.ymn = y;
+			if(y - 10 < this.ymn) {
+				this.ymn = y - 10;
 			}
 		},
 		moveSelected: function(x, y) {
