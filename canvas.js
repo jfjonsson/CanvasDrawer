@@ -195,9 +195,7 @@ $(function() {
 			drawing.canvasStack.push(new Circle(x, y));
 		} else if(drawing.tool === "rect") {
 			drawing.canvasStack.push(new Rect(x, y));
-		} /*else if(drawing.tool === "text") {
-			drawing.canvasStack.push(new TextArea(x, y));
-		}*/
+		}
 	});
 	
 	var Shape = Base.extend({
@@ -397,16 +395,6 @@ $(function() {
 		cntxt.font = drawing.font;
 		cntxt.fillText("Zup", drawing_startx, drawing_starty);
 	}
-	/*var TextArea = Shape.extend({
-		constructor: function(x, y, color) {
-			this.base( x, y, drawing.color, "text");
-		},
-		draw: function(cntxt) {
-			cntxt.fillStyle = this.color;
-			cntxt.fillText("Zup", this.startx, this.starty);
-		}
-	});*/
-
 
 });
 
