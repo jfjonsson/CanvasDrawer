@@ -44,12 +44,16 @@ $(function() {
 		drawing.tool = this.getAttribute("data-toolType");
 	});
 
+	$(".fontSelect").click(function(event) {
+		drawing.font = this.getAttribute("data-fontType");
+	});
+
 	$(".saveCanvas").click( function(ev) {
-		//TODO: save canvas
+		drawing.save();
 	});
 
 	$(".loadCanvas").click( function(ev) {
-		//TODO: load canvas
+		drawing.load();
 	});
 
 	$(".undo").click( function( ev ) {
@@ -73,6 +77,7 @@ $(function() {
 		color: "#282828",
 		selectColor: "#A0A0A0",
 		tool: "pen",
+		font: "30px Helvetica",
 		undo: function() {
 			if(this.canvasStack.length > 0) {
 				this.canvasRedoStack.push(this.canvasStack.pop());
@@ -84,6 +89,12 @@ $(function() {
 				this.canvasStack.push(this.canvasRedoStack.pop());
 				this.drawElements();
 			}
+		},
+		save: function() {
+			//TODO
+		},
+		load: function() {
+			//TODO
 		},
 		drawElements: function() {
 			clearCanvas();
@@ -141,6 +152,8 @@ $(function() {
 			drawing.canvasStack.push(new Pen(drawing_startx, drawing_starty));
 		} else if (drawing.tool === "erase") {
 			drawing.deleteElement(drawing_startx, drawing_starty);
+		} else if (drawing.tool === "text") {
+			textHelper(drawing_startx, drawing_starty);
 		}
 	});
 
@@ -182,9 +195,11 @@ $(function() {
 			drawing.canvasStack.push(new Circle(x, y));
 		} else if(drawing.tool === "rect") {
 			drawing.canvasStack.push(new Rect(x, y));
-		}
+		} /*else if(drawing.tool === "text") {
+			drawing.canvasStack.push(new TextArea(x, y));
+		}*/
 	});
-
+	
 	var Shape = Base.extend({
 		constructor: function(x, y, color, type) {
 			this.startx = drawing_startx;
@@ -375,7 +390,27 @@ $(function() {
 			cntxt.stroke();
 		}
 	});
+
+	function textHelper(x, y) {
+		//$("#text").focus();
+		cntxt.fillStyle = drawing.color;
+		cntxt.font = drawing.font;
+		cntxt.fillText("Zup", drawing_startx, drawing_starty);
+	}
+	/*var TextArea = Shape.extend({
+		constructor: function(x, y, color) {
+			this.base( x, y, drawing.color, "text");
+		},
+		draw: function(cntxt) {
+			cntxt.fillStyle = this.color;
+			cntxt.fillText("Zup", this.startx, this.starty);
+		}
+	});*/
+
+
 });
+
+
 
 
 
