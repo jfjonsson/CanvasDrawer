@@ -18,10 +18,12 @@ $(".newCanvas").click( function( event ) {
 });
 
 window.addEventListener("keydown", function(ev) {
+	var title = $("#canvasTitle").val();
 	if(ev.keyCode === 8 && document.activeElement.type !== 'text') {
     	ev.preventDefault();
     	drawing.deleteElement();
-	} else if((ev.keyCode == 13 || ev.keyCode == 27) && drawing.tool === "text") {
+	} else if(ev.keyCode == 13 && drawing.tool === "text") {
+		//ENTER puts the text on the canvas
 		drawing.placeText();
 	} else if (ev.keyCode === 38) {
 		//UP arrow
@@ -35,7 +37,18 @@ window.addEventListener("keydown", function(ev) {
 	} else if (ev.keyCode === 39) {
 		//RIGHT arrow
 		drawing.moveElement(10, 0);
-	}
+	} else if(ev.keyCode == 27 && drawing.tool === "text") {
+		//ESCAPE
+		$("#textTool").addClass("hidden");
+		$("#textBox").val("");
+	} else if(ev.keyCode === 13 && !$("#canvasInfo").hasClass("hidden")) {
+		//ENTER saves image
+		saveCanvas();
+	} else if(ev.keyCode === 27 && !$("#canvasInfo").hasClass("hidden")) {
+		//ESCAPE
+		$("#canvasTitle").val("");
+		$("#canvasInfo").addClass("hidden");
+	} 
 });
 
 function error(msg) {
@@ -128,7 +141,7 @@ var drawing = {
 			type: "GET",
 			url: "http://whiteboard.apphb.com/Home/GetWhiteboard",
 			data: param,
-			dataType: "jasonp",
+			dataType: "jsonp",
 			crossDomain: true,
 			success: function(data) {
 				console.log(data);
@@ -494,12 +507,7 @@ $(".save").click( function(ev) {
 });
 
 $("#saveCanvas").click( function(ev) {
-	var title = $("#canvasTitle").val();
-	if(title !== "") {
-		drawing.save(title);
-	} else {
-		error("Canvas missing a title!");
-	}
+	saveCanvas();
 });
 
 $(".undo").click( function(ev) {
@@ -517,6 +525,17 @@ $("#placeText").click( function(ev) {
 function loadCanvas(id) {
 	drawing.loadID(id);
 };
+
+function saveCanvas(){
+	var title = $("#canvasTitle").val();
+	if(title !== "") {
+		drawing.save(title);
+	} else {
+		error("Canvas missing a title!");
+		$("#canvasTitle").val("");
+		$("#canvasInfo").addClass("hidden");
+	}
+}
 
 
 
