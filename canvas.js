@@ -6,7 +6,6 @@ $(function() {
 
   	cntxt.fillStyle="#EFEFEF";
   	cntxt.fillRect(0, 0, cntxt.canvas.width, cntxt.canvas.height);
-  	cntxt.lineWidth = 4;
 
 	$(".navbar-brand").click(function() {
 		location.reload();
@@ -47,8 +46,12 @@ $(function() {
 		drawing.font = this.getAttribute("data-fontType");
 	});
 
+	$(".widthSelect").click(function(event) {
+		drawing.toolWidth = this.getAttribute("data-lineWidth");
+	});
+
 	$(".saveCanvas").click( function(ev) {
-		drawing.save();
+		$("#canvasInfo").removeClass("hidden");
 	});
 
 	$(".loadCanvas").click( function(ev) {
@@ -80,6 +83,7 @@ $(function() {
 		selectColor: "#A0A0A0",
 		tool: "pen",
 		font: "30px Helvetica",
+		toolWidth: 4,
 		undo: function() {
 			if(this.canvasStack.length > 0) {
 				this.canvasRedoStack.push(this.canvasStack.pop());
@@ -171,7 +175,6 @@ $(function() {
 			drawing.deleteElement(_global.drawing_startx, _global.drawing_starty);
 		} else if (drawing.tool === "text" && _global.isDrawing !== true) {
 			$("#textTool").removeClass("hidden");
-			console.log($("#textBox"));
 			setTimeout(function(){$("#textBox").eq(0).focus();}, 500);
 		}
 		_global.isDrawing = true;
@@ -219,7 +222,7 @@ $(function() {
 	});
 	
 	var Shape = Base.extend({
-		constructor: function(x, y, color, type) {
+		constructor: function(x, y, color, type, toolWidth) {
 			this.startx = _global.drawing_startx;
 			this.starty = _global.drawing_starty;
 			this.endx = x;
@@ -227,6 +230,7 @@ $(function() {
 			this.color = color;
 			this.type = type;
 			this.selected = false;
+			this.width = toolWidth;
 		},
 		atPoint: function(x, y) {
 			var xmn = Math.min(this.startx, this.endx) - 10,
@@ -261,7 +265,7 @@ $(function() {
 
 	var Pen = Shape.extend({
 		constructor: function(x, y) {
-			this.base(x, y, drawing.color, "pen");
+			this.base(x, y, drawing.color, "pen", drawing.toolWidth);
 			this.cords = [];
 			this.cords.push(new Point(x, y));
 			this.xmx = 0;
@@ -271,6 +275,7 @@ $(function() {
 		},
 		draw: function(cntxt) {
 			cntxt.strokeStyle = this.color;
+			cntxt.lineWidth = this.width;
 			cntxt.beginPath();
 			cntxt.moveTo(this.cords[0].x, this.cords[0].y);
 			for (var i = 1; i < this.cords.length; i++) {
@@ -320,6 +325,7 @@ $(function() {
 	function lineHelper(x, y) {
 		drawing.drawElements();
 		cntxt.strokeStyle = drawing.color;
+		cntxt.lineWidth = drawing.toolWidth;
 		cntxt.beginPath();
 		cntxt.moveTo(_global.drawing_startx, _global.drawing_starty);
 		cntxt.lineTo(x, y);
@@ -329,21 +335,22 @@ $(function() {
 	var Line = Shape.extend({
 		constructor: function(x, y) {
 			console.log("Creating Line, x: " + x + ", y: " + y + ", color: " + drawing.color);
-			this.base( x, y, drawing.color, "line");
+			this.base( x, y, drawing.color, "line", drawing.toolWidth);
 		},
 		draw: function(cntxt) {
 			cntxt.strokeStyle = this.color;
+			cntxt.lineWidth = this.width;
 			cntxt.beginPath();
 			cntxt.moveTo(this.startx, this.starty);
 			cntxt.lineTo(this.endx, this.endy);
 			cntxt.stroke();
-
 		}
 	});
 
 	function circleHelper(x, y){
 		drawing.drawElements();
 		cntxt.strokeStyle = drawing.color;
+		cntxt.lineWidth = drawing.toolWidth;
 		cntxt.beginPath();
 		var dx = Math.abs(_global.drawing_startx - x);
 		var dy = Math.abs(_global.drawing_starty - y);
@@ -356,10 +363,11 @@ $(function() {
 	var Circle = Shape.extend({
 		constructor: function(x, y) {
 			console.log("Creating Circle, x: " + x + ", y: " + y + ", color: " + drawing.color);
-			this.base( x, y, drawing.color, "circle");
+			this.base( x, y, drawing.color, "circle", drawing.toolWidth);
 		},
 		draw: function(cntxt) {
 			cntxt.strokeStyle = this.color;
+			cntxt.lineWidth = this.width;
 			cntxt.beginPath();
 			var dx = Math.abs(this.startx - this.endx);
 			var dy = Math.abs(this.starty - this.endy);
@@ -391,6 +399,7 @@ $(function() {
 	function rectHelper(x, y){
 		drawing.drawElements();
 		cntxt.strokeStyle = drawing.color;
+		cntxt.lineWidth = drawing.toolWidth;
 		cntxt.beginPath();
 		cntxt.rect(_global.drawing_startx, _global.drawing_starty, 
 			x - _global.drawing_startx, y - _global.drawing_starty);
@@ -399,10 +408,11 @@ $(function() {
 
 	var Rect = Shape.extend({
 		constructor: function(x, y) {
-			this.base( x, y, drawing.color, "rect");
+			this.base( x, y, drawing.color, "rect", drawing.toolWidth);
 		},
 		draw: function(cntxt) {
 			cntxt.strokeStyle = this.color;
+			cntxt.lineWidth = this.width;
 			cntxt.beginPath();
 			cntxt.rect(this.startx, this.starty, this.endx - this.startx, this.endy - this.starty);
 			cntxt.stroke();
@@ -411,13 +421,11 @@ $(function() {
 
 	var Text = Shape.extend({
 		constructor: function(x, y, textString) {
-			this.base(x, y, drawing.color, "text");
+			this.base(x, y, drawing.color, "text", drawing.toolWidth);
 			this.font = drawing.font;
 			this.textString = textString;
 		},
 		draw: function(cntxt) {
-			console.log("drawing text");
-			console.log(this.textString);
 			cntxt.fillStyle = this.color;
 			cntxt.font = this.font;
 			cntxt.fillText(this.textString, this.startx, this.starty);
