@@ -1,3 +1,8 @@
+$(document).ready(function() {
+	//Load list of possible canvasessss
+	drawing.loadList();
+});
+
 
 var cnvs = document.getElementById("paintView");
 	var cntxt = cnvs.getContext("2d");
@@ -42,154 +47,6 @@ function error(msg) {
 	$("#errorMsg").text(msg);
 	$(".alert-danger").removeClass("hidden");
 }
-
-
-var drawing = {
-	canvasStack: [],
-	canvasRedoStack: [],
-	selectedId: null,
-	color: "#282828",
-	selectColor: "#A0A0A0",
-	tool: "pen",
-	font: "30px Helvetica",
-	toolWidth: 4,
-	undo: function() {
-		if(this.canvasStack.length > 0) {
-			this.canvasRedoStack.push(this.canvasStack.pop());
-			this.drawElements();
-		}
-	},
-	redo: function() {
-		if(this.canvasRedoStack.length > 0) {
-			this.canvasStack.push(this.canvasRedoStack.pop());
-			this.drawElements();
-		}
-	},
-	save: function(title) {
-
-		var stringifiedArray = JSON.stringify(this.canvasStack);
-
-		var param = { "user": "jonj13", // You should use your own username!
-			"name": title,
-			"content": stringifiedArray,
-			"template": true
-		};
-
-		$.ajax({
-			type: "POST",
-			contentType: "application/json; charset=utf-8",
-			url: "http://whiteboard.apphb.com/Home/Save",
-			data: param,
-			dataType: "jsonp",
-			crossDomain: true,
-			success: function (data) {
-				$("#canvasId").text(data.ID);
-				$(".alert-success").removeClass("hidden");
-				$("#canvasTitle").val("");
-				$("#canvasInfo").addClass("hidden");
-			},
-			error: function (xhr, err) {
-				error("Too many canvas elements! (Pen to blame)");
-				console.log("Shit went south!");
-				$("#canvasTitle").val("");
-				$("#canvasInfo").addClass("hidden");
-			}
-		});
-	},
-	loadList: function() {
-
-		var param = {
-			"user" : "jonj13",
-			"template" : true
-		};
-
-		$.ajax({
-			type: "GET",
-			url: "http://whiteboard.apphb.com/Home/GetList",
-			data: param,
-			dataType: "jsonp",
-			crossDomain: true,
-			success: function (data) {
-				for(var i = 0; i < data.length; i++) {
-					$(".loadList").append('<li><a href="#" onclick="loadCanvas(' + data[i].ID + ')">' + data[i].WhiteboardTitle + '</a></li>');
-				}
-			},
-			error: function (xhr, err) {
-				console.log("Shit went north!");
-			}
-		});
-	},
-	loadID: function(id) {
-		var param = {
-			"id" : id
-		};
-
-		$.ajax({
-			type: "GET",
-			url: "http://whiteboard.apphb.com/Home/GetWhiteboard",
-			data: param,
-			dataType: "jasonp",
-			crossDomain: true,
-			success: function(data) {
-				console.log(data);
-			},
-			error: function(xhr, err) {
-				console.log("Shit went east!")
-			}
-		});
-	},
-	drawElements: function() {
-		this.clearDrawing();
-		for (var i = 0; i < this.canvasStack.length; ++i) {
-			this.canvasStack[i].draw(cntxt);
-		};
-	},
-	selectElement: function(x, y) {
-		this.drawElements();
-		for (var i = this.canvasStack.length - 1; i >= 0; i--) {
-			if(this.canvasStack[i].atPoint(x, y)) {
-				this.canvasStack[i].selected = true;
-				this.canvasStack[i].drawSelect();
-				this.selectedId = i;
-				return;
-			}
-		};
-		this.selectedId = null;
-	},
-	moveElement: function(x, y) {
-		if(this.selectedId !== null) {
-			this.canvasStack[this.selectedId].moveSelected(x, y);
-			this.drawElements();
-		}
-	},
-	deleteElement: function(x, y) {
-		if (x !== undefined && y !== undefined){
-			this.selectElement(x, y);
-			this.deleteElement();
-		} else if(this.selectedId !== null) {
-			this.canvasRedoStack.push(this.canvasStack[this.selectedId]);
-			this.canvasStack.splice(this.selectedId, 1);
-			selectedId = null;
-			this.drawElements();
-		} 
-	},
-	clearDrawing: function() {
-		cntxt.fillStyle="#EFEFEF";
-		cntxt.clearRect ( 0 , 0 , cntxt.canvas.width, cntxt.canvas.height );
-		cntxt.fillRect(0, 0, cntxt.canvas.width, cntxt.canvas.height);
-	},
-	placeText: function() {
-		var textString = $("#textBox").val();
-		this.canvasStack.push(new Text(_global.drawing_startx, _global.drawing_starty, textString));
-		$("#textTool").addClass("hidden");
-		$("#textBox").val("");
-		this.drawElements();
-		this.tool = "select";
-	}
-};
-
-//Load list of possible canvasessss
-drawing.loadList();
 
 var _global = {
 	isDrawing: false,
@@ -518,5 +375,174 @@ function loadCanvas(id) {
 	drawing.loadID(id);
 };
 
+var drawing = {
+	canvasStack: [],
+	canvasRedoStack: [],
+	selectedId: null,
+	color: "#282828",
+	selectColor: "#A0A0A0",
+	tool: "pen",
+	font: "30px Helvetica",
+	toolWidth: 4,
+	undo: function() {
+		if(this.canvasStack.length > 0) {
+			this.canvasRedoStack.push(this.canvasStack.pop());
+			this.drawElements();
+		}
+	},
+	redo: function() {
+		if(this.canvasRedoStack.length > 0) {
+			this.canvasStack.push(this.canvasRedoStack.pop());
+			this.drawElements();
+		}
+	},
+	save: function(title) {
 
+		var stringifiedArray = JSON.stringify(this.canvasStack);
+
+		var param = { "user": "jonj13", // You should use your own username!
+			"name": title,
+			"content": stringifiedArray,
+			"template": true
+		};
+
+		$.ajax({
+			type: "POST",
+			contentType: "application/json; charset=utf-8",
+			url: "http://whiteboard.apphb.com/Home/Save",
+			data: param,
+			dataType: "jsonp",
+			crossDomain: true,
+			success: function (data) {
+				$("#canvasId").text(data.ID);
+				$(".alert-success").removeClass("hidden");
+				$("#canvasTitle").val("");
+				$("#canvasInfo").addClass("hidden");
+			},
+			error: function (xhr, err) {
+				error("Too many canvas elements! (Pen to blame)");
+				console.log("Shit went south!");
+				$("#canvasTitle").val("");
+				$("#canvasInfo").addClass("hidden");
+			}
+		});
+	},
+	loadList: function() {
+
+		var param = {
+			"user" : "jonj13",
+			"template" : true
+		};
+
+		$.ajax({
+			type: "GET",
+			url: "http://whiteboard.apphb.com/Home/GetList",
+			data: param,
+			dataType: "jsonp",
+			crossDomain: true,
+			success: function (data) {
+				for(var i = 0; i < data.length; i++) {
+					$(".loadList").append('<li><a href="#" onclick="loadCanvas(' + data[i].ID + ')">' + data[i].WhiteboardTitle + '</a></li>');
+				}
+			},
+			error: function (xhr, err) {
+				console.log("Shit went north!");
+			}
+		});
+	},
+	loadID: function(id) {
+		var param = {
+			"id" : id
+		};
+
+		drawing.clearDrawing();
+		drawing.canvasStack.length = 0;
+		drawing.canvasRedoStack.length = 0;
+
+		$.ajax({
+			type: "GET",
+			url: "http://whiteboard.apphb.com/Home/GetWhiteboard",
+			data: param,
+			dataType: "jsonp",
+			crossDomain: true,
+			success: function(data) {
+				$(jQuery.parseJSON(data.WhiteboardContents)).each(function() {  
+    				if(this.type === "pen") {
+    					var newPen = this;
+    					newPen.__proto__ = new Pen;
+    					drawing.canvasStack.push(newPen);
+    				} else if(this.type === "circle") {
+    					var newCircle = this;
+    					newCircle.__proto__ = new Circle;
+    					drawing.canvasStack.push(newCircle);
+    				} else if(this.type === "rect") {
+    					var newRect = this;
+    					newRect.__proto__ = new Rect;
+    					drawing.canvasStack.push(newRect);
+    				} else if(this.type === "text") {
+    					var newText = this;
+    					newText.__proto__ = new Text;
+    					drawing.canvasStack.push(newText);
+    				} else if(this.type === "line") {
+    					var newLine = this;
+    					newLine.__proto__ = new Line;
+    					drawing.canvasStack.push(newLine);
+    				}
+				});
+				drawing.drawElements();
+			},
+			error: function(xhr, err) {
+				console.log("Shit went east!")
+			}
+		});
+	},
+	drawElements: function() {
+		this.clearDrawing();
+		for (var i = 0; i < this.canvasStack.length; ++i) {
+			this.canvasStack[i].draw(cntxt);
+		};
+	},
+	selectElement: function(x, y) {
+		this.drawElements();
+		for (var i = this.canvasStack.length - 1; i >= 0; i--) {
+			if(this.canvasStack[i].atPoint(x, y)) {
+				this.canvasStack[i].selected = true;
+				this.canvasStack[i].drawSelect();
+				this.selectedId = i;
+				return;
+			}
+		};
+		this.selectedId = null;
+	},
+	moveElement: function(x, y) {
+		if(this.selectedId !== null) {
+			this.canvasStack[this.selectedId].moveSelected(x, y);
+			this.drawElements();
+		}
+	},
+	deleteElement: function(x, y) {
+		if (x !== undefined && y !== undefined){
+			this.selectElement(x, y);
+			this.deleteElement();
+		} else if(this.selectedId !== null) {
+			this.canvasRedoStack.push(this.canvasStack[this.selectedId]);
+			this.canvasStack.splice(this.selectedId, 1);
+			selectedId = null;
+			this.drawElements();
+		} 
+	},
+	clearDrawing: function() {
+		cntxt.fillStyle="#EFEFEF";
+		cntxt.clearRect ( 0 , 0 , cntxt.canvas.width, cntxt.canvas.height );
+		cntxt.fillRect(0, 0, cntxt.canvas.width, cntxt.canvas.height);
+	},
+	placeText: function() {
+		var textString = $("#textBox").val();
+		this.canvasStack.push(new Text(_global.drawing_startx, _global.drawing_starty, textString));
+		$("#textTool").addClass("hidden");
+		$("#textBox").val("");
+		this.drawElements();
+		this.tool = "select";
+	}
+};
 
