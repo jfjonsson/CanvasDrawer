@@ -1,21 +1,15 @@
 $(document).ready(function() {
-	//Load list of possible canvasessss
+	//List of templates
 	drawing.loadList();
+	//Create fresh canvas
+	drawing.clearDrawing();
 });
-
 
 var cnvs = document.getElementById("paintView");
-	var cntxt = cnvs.getContext("2d");
-	cntxt.canvas.width  = window.innerWidth - 30;
-	cntxt.canvas.height = window.innerHeight - 80; 
-
-	cntxt.fillStyle="#EFEFEF";
-	cntxt.fillRect(0, 0, cntxt.canvas.width, cntxt.canvas.height);
-
-$(".navbar-brand").click(function() {
-	location.reload();
-});
-
+var cntxt = cnvs.getContext("2d");
+cntxt.canvas.width  = window.innerWidth - 30;
+cntxt.canvas.height = window.innerHeight - 80; 
+	
 $(".newCanvas").click( function( event ) {
 	drawing.clearDrawing();
 	drawing.canvasStack.length = 0;
@@ -117,11 +111,11 @@ $("#paintView").mouseup(function (ev) {
 	_global.isDrawing = false;
 
 	if(drawing.tool === "line") {
-		drawing.canvasStack.push(new Line(x, y));
+		drawing.canvasStack.push(new Line(x, y, drawing.color, "line", drawing.toolWidth));
 	} else if(drawing.tool === "circle") {
-		drawing.canvasStack.push(new Circle(x, y));
+		drawing.canvasStack.push(new Circle(x, y, drawing.color, "circle", drawing.toolWidth));
 	} else if(drawing.tool === "rect") {
-		drawing.canvasStack.push(new Rect(x, y));
+		drawing.canvasStack.push(new Rect(x, y, drawing.color, "rect", drawing.toolWidth));
 	}
 });
 
@@ -237,9 +231,6 @@ function lineHelper(x, y) {
 }
 
 var Line = Shape.extend({
-	constructor: function(x, y) {
-		this.base( x, y, drawing.color, "line", drawing.toolWidth);
-	},
 	draw: function(cntxt) {
 		cntxt.strokeStyle = this.color;
 		cntxt.lineWidth = this.width;
@@ -264,9 +255,6 @@ function circleHelper(x, y){
 }
 
 var Circle = Shape.extend({
-	constructor: function(x, y) {
-		this.base( x, y, drawing.color, "circle", drawing.toolWidth);
-	},
 	draw: function(cntxt) {
 		cntxt.strokeStyle = this.color;
 		cntxt.lineWidth = this.width;
@@ -309,9 +297,6 @@ function rectHelper(x, y){
 }
 
 var Rect = Shape.extend({
-	constructor: function(x, y) {
-		this.base( x, y, drawing.color, "rect", drawing.toolWidth);
-	},
 	draw: function(cntxt) {
 		cntxt.strokeStyle = this.color;
 		cntxt.lineWidth = this.width;
@@ -380,6 +365,7 @@ $("#placeText").click( function(ev) {
 });
 
 function loadCanvas(id) {
+	//Load canvas by canvasID
 	drawing.loadID(id);
 };
 
@@ -394,6 +380,8 @@ function saveCanvas(){
 	}
 }
 
+
+//Drawing holds helper functions for the canvas
 var drawing = {
 	canvasStack: [],
 	canvasRedoStack: [],
@@ -419,7 +407,7 @@ var drawing = {
 
 		var stringifiedArray = JSON.stringify(this.canvasStack);
 
-		var param = { "user": "jonj13", // You should use your own username!
+		var param = { "user": "freyr12", // You should use your own username!
 			"name": title,
 			"content": stringifiedArray,
 			"template": true
@@ -439,19 +427,23 @@ var drawing = {
 				$("#canvasInfo").addClass("hidden");
 			},
 			error: function (xhr, err) {
-				error("Too many canvas elements! (Pen to blame)");
 				console.log("Shit went south!");
+				setTimeout(error("Too many canvas elements! (Pen to blame)"),500);
 				$("#canvasTitle").val("");
 				$("#canvasInfo").addClass("hidden");
 			}
 		});
+
+		drawing.loadList();
 	},
 	loadList: function() {
 
 		var param = {
-			"user" : "jonj13",
+			"user" : "freyr12",
 			"template" : true
 		};
+
+		$(".loadList").html("");
 
 		$.ajax({
 			type: "GET",
