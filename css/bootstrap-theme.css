@@ -2594,7 +2594,7 @@ select[multiple].form-group-lg .form-control {
   height: 39px;
   line-height: 39px;
   text-align: center;
-  pointer-events: none;
+  pointer-evs: none;
 }
 .input-lg + .form-control-feedback {
   width: 52px;
@@ -2842,7 +2842,7 @@ select[multiple].form-group-lg .form-control {
 .btn[disabled],
 fieldset[disabled] .btn {
   cursor: not-allowed;
-  pointer-events: none;
+  pointer-evs: none;
   opacity: 0.65;
   filter: alpha(opacity=65);
   -webkit-box-shadow: none;
@@ -3526,7 +3526,7 @@ tbody.collapse.in {
 [data-toggle="buttons"] > .btn-group > .btn input[type="checkbox"] {
   position: absolute;
   clip: rect(0, 0, 0, 0);
-  pointer-events: none;
+  pointer-evs: none;
 }
 .input-group {
   position: relative;

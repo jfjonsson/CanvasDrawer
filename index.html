@@ -44,15 +44,6 @@
         </ul>
       </li>
       <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class ="glyphicon glyphicon-font"></i> Font <b class="caret"></b></a>
-        <ul class="dropdown-menu">
-          <li><a href="#" class="fontSelect" data-fontType="30px Helvetica">Helvetica</a></li>
-          <li><a href="#" class="fontSelect" data-fontType="30px Georgia">Georgia</a></li>
-          <li><a href="#" class="fontSelect" data-fontType="30px Comic Sans MS">Comic Sans</a></li>
-          <li><a href="#" class="fontSelect" data-fontType="30px Arial Narrow">Arial Narrow</a></li>
-        </ul>
-      </li>
-      <li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="glyphicon glyphicon-tint"></i> Style Select<b class="caret"></b></a>
         <ul class="dropdown-menu">
           <li><a href="#" class="colorSelect" data-toolColor="#282828">Black</a></li>
@@ -62,11 +53,21 @@
           <li role="presentation" class="divider"></li>
           <li><a href="#" class="widthSelect" data-lineWidth="2">Small</a></li>
           <li><a href="#" class="widthSelect" data-lineWidth="4">Medium</a></li>
-          <li><a href="#" class="widthSelect" data-lineWidth="6">Large</a></li>
+          <li><a href="#" class="widthSelect" data-lineWidth="7">Large</a></li>
+          <li role="presentation" class="divider"></li>
+          <li><a href="#" class="fontSelect" data-fontType="30px Helvetica">Helvetica</a></li>
+          <li><a href="#" class="fontSelect" data-fontType="30px Georgia">Georgia</a></li>
+          <li><a href="#" class="fontSelect" data-fontType="30px Comic Sans MS">Comic Sans</a></li>
+          <li><a href="#" class="fontSelect" data-fontType="30px Arial Narrow">Arial Narrow</a></li>
       </ul>
       </li>
-      <li><a class="saveCanvas"href="#"><i class="glyphicon glyphicon-floppy-save"></i> Save Canvas</a></li>
-      <li><a class="loadCanvas"href="#"><i class="glyphicon glyphicon-floppy-open"></i> Load Canvas</a></li>
+      <li><a class="save"href="#"><i class="glyphicon glyphicon-floppy-save"></i> Save</a></li>
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="glyphicon glyphicon-floppy-open"></i> Load<b class="caret"></b></a>
+        <ul class="dropdown-menu loadList">
+          <!-- Load list will apear here -->
+        </ul>
+      </li>
       <li><a class="newCanvas" href="#"><i class="glyphicon glyphicon-refresh"></i> New Canvas</a></li>
       <li><a class="undo" href="#"><i class="glyphicon glyphicon-arrow-left"></i> Undo</a></li>
       <li><a class="redo" href="#">Redo <i class="glyphicon glyphicon-arrow-right"></i></a></li>
@@ -84,19 +85,25 @@
       <br>
     </div>
 
+    <div id="alerts" class="container-fluid">
+      <div class="alert alert-dismissable alert-danger hidden">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        <strong>oops!</strong> <span id="errorMsg"></span>
+      </div>
+
+      <div class="alert alert-dismissable alert-success hidden">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        <strong>Canvas saved!</strong>, canvas id: <span id="canvasId"></span>
+      </div> 
+    </div>
+    
+
     <div id="canvasInfo" class="container-fluid hidden">
       <div class="input-group">
-        <div class="col-lg-6">
-          <input id="canvasTitle" type="text" class="form-control" placeholder="Canvas title"/>          
-        </div>
-        <div class="col-lg-6">
-          <div class="input-group">
-            <input id="username" type="text" class="form-control" placeholder="RU username"/>
-            <span class="input-group-btn">
-              <button id="placeText" class="btn btn-default" type="button">Ok</button>
-            </span>
-          </div>
-        </div>
+        <input id="canvasTitle" type="text" class="form-control" placeholder="Canvas Title..."/>
+        <span class="input-group-btn">
+          <button id="saveCanvas" class="btn btn-default" type="button">Save</button>
+        </span>
       </div>
       <br>
     </div>
