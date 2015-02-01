@@ -8,24 +8,22 @@ $(function() {
   	cntxt.fillRect(0, 0, cntxt.canvas.width, cntxt.canvas.height);
   	cntxt.lineWidth = 4;
 
-  	function clearCanvas() {
-		cntxt.clearRect ( 0 , 0 , cntxt.canvas.width, cntxt.canvas.height );
-		cntxt.fillRect(0, 0, cntxt.canvas.width, cntxt.canvas.height);
-	}
 	$(".navbar-brand").click(function() {
 		location.reload();
 	});
 
 	$(".newCanvas").click( function( event ) {
-		console.log("clearing");
-		clearCanvas();
+		drawing.clearDrawing();
 		drawing.canvasStack.length = 0;
+		drawing.canvasRedoStack.length = 0;
 	});
 
 	window.addEventListener("keydown", function(ev) {
-		if(ev.keyCode === 8 && document.activeElement !== 'text') {
+		if(ev.keyCode === 8 && document.activeElement.type !== 'text') {
         	ev.preventDefault();
         	drawing.deleteElement();
+    	} else if((ev.keyCode == 13 || ev.keyCode == 27) && drawing.tool === "text") {
+    		drawing.placeText();
     	} else if (ev.keyCode === 38) {
     		//UP arrow
     		drawing.moveElement(0, -10);
@@ -65,6 +63,9 @@ $(function() {
 		drawing.redo();
 	});
 
+	$("#placeText").click( function( ev ) {
+		drawing.placeText();
+	});
 
 	$(".colorSelect").click( function ( ev ) {
 		drawing.color = this.getAttribute("data-toolColor");
@@ -98,7 +99,7 @@ $(function() {
 			//TODO
 		},
 		drawElements: function() {
-			clearCanvas();
+			this.clearDrawing();
 			for (var i = 0; i < this.canvasStack.length; ++i) {
 				this.canvasStack[i].draw(cntxt);
 			};
@@ -133,33 +134,51 @@ $(function() {
 				selectedId = null;
 				this.drawElements();
 			} 
+		},
+		clearDrawing: function() {
+			cntxt.fillStyle="#EFEFEF";
+			cntxt.clearRect ( 0 , 0 , cntxt.canvas.width, cntxt.canvas.height );
+			cntxt.fillRect(0, 0, cntxt.canvas.width, cntxt.canvas.height);
+		},
+		placeText: function() {
+			var textString = $("#textBox").val();
+			this.canvasStack.push(new Text(_global.drawing_startx, _global.drawing_starty, textString));
+			console.log(this.canvasStack[this.canvasStack.length -1]);
+			$("#textTool").addClass("hidden");
+			$("#textBox").val("");
+			this.drawElements();
+			this.tool = "select";
 		}
 	};
 
-	var isDrawing = false;
-	var isDragging = false;
+	var _global = {
+		isDrawing: false,
 
-	var drawing_startx = 0;
-	var drawing_starty = 0;
+		drawing_startx: 0,
+		drawing_starty: 0	
+	}
 
+	
 	$("#paintView").mousedown(function (ev) {
 		console.log("mouse down");
-		drawing_startx = ev.pageX - this.offsetLeft;
-		drawing_starty = ev.pageY - this.offsetTop;
-		isDrawing = true;
+		_global.drawing_startx = ev.pageX - this.offsetLeft;
+		_global.drawing_starty = ev.pageY - this.offsetTop;
 		if(drawing.tool === "select") {
-			drawing.selectElement(drawing_startx, drawing_starty);
+			drawing.selectElement(_global.drawing_startx, _global.drawing_starty);
 		} else if (drawing.tool === "pen") {
-			drawing.canvasStack.push(new Pen(drawing_startx, drawing_starty));
+			drawing.canvasStack.push(new Pen(_global.drawing_startx, _global.drawing_starty));
 		} else if (drawing.tool === "erase") {
-			drawing.deleteElement(drawing_startx, drawing_starty);
-		} else if (drawing.tool === "text") {
-			textHelper(drawing_startx, drawing_starty);
+			drawing.deleteElement(_global.drawing_startx, _global.drawing_starty);
+		} else if (drawing.tool === "text" && _global.isDrawing !== true) {
+			$("#textTool").removeClass("hidden");
+			console.log($("#textBox"));
+			setTimeout(function(){$("#textBox").eq(0).focus();}, 500);
 		}
+		_global.isDrawing = true;
 	});
 
 	$("#paintView").mousemove(function (ev) {
-		if(isDrawing === true) {
+		if(_global.isDrawing === true) {
 			console.log("mouse move");
 			var x = ev.pageX - this.offsetLeft,
 			    y = ev.pageY - this.offsetTop;
@@ -171,11 +190,11 @@ $(function() {
 			} else if(drawing.tool === "rect") {
 				rectHelper(x, y);
 			} else if(drawing.tool === "select" && drawing.selectedId !== null) {
-				var xdev = x - drawing_startx,
-				ydev = y - drawing_starty;
+				var xdev = x - _global.drawing_startx,
+				ydev = y - _global.drawing_starty;
 				drawing.moveElement(xdev, ydev);
-				drawing_startx = ev.pageX - this.offsetLeft;
-				drawing_starty = ev.pageY - this.offsetTop;
+				_global.drawing_startx = ev.pageX - this.offsetLeft;
+				_global.drawing_starty = ev.pageY - this.offsetTop;
 			} else if(drawing.tool === "pen") {
 				drawing.canvasStack[drawing.canvasStack.length - 1].addCords(x, y);
 			} else if (drawing.tool === "erase") {
@@ -188,7 +207,7 @@ $(function() {
 		console.log("mouse up");
 		var x = ev.pageX - this.offsetLeft;
 		var y = ev.pageY - this.offsetTop;
-		isDrawing = false;
+		_global.isDrawing = false;
 
 		if(drawing.tool === "line") {
 			drawing.canvasStack.push(new Line(x, y));
@@ -201,8 +220,8 @@ $(function() {
 	
 	var Shape = Base.extend({
 		constructor: function(x, y, color, type) {
-			this.startx = drawing_startx;
-			this.starty = drawing_starty;
+			this.startx = _global.drawing_startx;
+			this.starty = _global.drawing_starty;
 			this.endx = x;
 			this.endy = y;
 			this.color = color;
@@ -302,7 +321,7 @@ $(function() {
 		drawing.drawElements();
 		cntxt.strokeStyle = drawing.color;
 		cntxt.beginPath();
-		cntxt.moveTo(drawing_startx, drawing_starty);
+		cntxt.moveTo(_global.drawing_startx, _global.drawing_starty);
 		cntxt.lineTo(x, y);
 		cntxt.stroke();
 	}
@@ -326,10 +345,10 @@ $(function() {
 		drawing.drawElements();
 		cntxt.strokeStyle = drawing.color;
 		cntxt.beginPath();
-		var dx = Math.abs(drawing_startx - x);
-		var dy = Math.abs(drawing_starty - y);
+		var dx = Math.abs(_global.drawing_startx - x);
+		var dy = Math.abs(_global.drawing_starty - y);
 		var radius = Math.sqrt(dx * dx + dy * dy);
-		cntxt.arc(drawing_startx, drawing_starty,
+		cntxt.arc(_global.drawing_startx, _global.drawing_starty,
 			radius, 0, 2 * Math.PI, false);
 		cntxt.stroke();
 	}
@@ -373,13 +392,13 @@ $(function() {
 		drawing.drawElements();
 		cntxt.strokeStyle = drawing.color;
 		cntxt.beginPath();
-		cntxt.rect(drawing_startx, drawing_starty, 
-			x - drawing_startx, y - drawing_starty);
+		cntxt.rect(_global.drawing_startx, _global.drawing_starty, 
+			x - _global.drawing_startx, y - _global.drawing_starty);
 		cntxt.stroke();
 	}
 
 	var Rect = Shape.extend({
-		constructor: function(x, y, color) {
+		constructor: function(x, y) {
 			this.base( x, y, drawing.color, "rect");
 		},
 		draw: function(cntxt) {
@@ -390,13 +409,27 @@ $(function() {
 		}
 	});
 
-	function textHelper(x, y) {
-		//$("#text").focus();
-		cntxt.fillStyle = drawing.color;
-		cntxt.font = drawing.font;
-		cntxt.fillText("Zup", drawing_startx, drawing_starty);
-	}
-
+	var Text = Shape.extend({
+		constructor: function(x, y, textString) {
+			this.base(x, y, drawing.color, "text");
+			this.font = drawing.font;
+			this.textString = textString;
+		},
+		draw: function(cntxt) {
+			console.log("drawing text");
+			console.log(this.textString);
+			cntxt.fillStyle = this.color;
+			cntxt.font = this.font;
+			cntxt.fillText(this.textString, this.startx, this.starty);
+		},
+		atPoint: function(x, y) {
+			return (x >= this.startx - 10) && (x <= this.startx + (this.textString.length * 15)) 
+			&& (y >= this.starty - 40) && (y <= this.starty + 10);
+		},
+		drawSelect: function() {
+			// NO select square drawn on string 
+		}
+	});
 });
 
 

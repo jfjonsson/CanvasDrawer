@@ -69,12 +69,24 @@
   </div>
 </div>
 
-<div class="container-fluid">
-	<canvas id="paintView">
-		
-	</canvas>
-    <script type="text/javascript" src="canvas.js"></script>
-</div>
+    <div id="textTool" class="container-fluid hidden">
+      <div class="input-group">
+        <input id="textBox" type="text" class="form-control" placeholder="Enter text..."/>
+        <span class="input-group-btn">
+          <button id="placeText" class="btn btn-default" type="button">Ok</button>
+        </span>
+      </div>
+      <br/>
+    </div>
+
+
+    <div class="container-fluid">
+      <canvas id="paintView">
+        <P>Your browser does not support HTML canvas element, please reopen in supported browser</P>
+      </canvas>
+      <script type="text/javascript" src="canvas.js"></script>
+    </div>
+
 
 </body>
 </html>
